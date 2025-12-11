@@ -13,6 +13,7 @@ import (
 	"github.com/forfire912/virServer/pkg/session"
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/postgres"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
@@ -122,9 +123,16 @@ func initDatabase(cfg *config.Config) (*gorm.DB, error) {
 	
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		// If postgres connection fails, try in-memory SQLite for development
+		// If postgres connection fails, use in-memory SQLite for development
 		log.Printf("Warning: PostgreSQL connection failed, using in-memory SQLite: %v", err)
-		return gorm.Open(postgres.Open(""), &gorm.Config{})
+		
+		// Import SQLite driver
+		sqliteDB, sqliteErr := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
+		if sqliteErr != nil {
+			return nil, fmt.Errorf("failed to initialize database: %w", sqliteErr)
+		}
+		log.Println("Using in-memory SQLite database for development")
+		return sqliteDB, nil
 	}
 	
 	return db, nil

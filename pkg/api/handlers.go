@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/forfire912/virServer/pkg/adapters"
-	"github.com/forfire912/virServer/pkg/models"
 	"github.com/forfire912/virServer/pkg/session"
 	"github.com/gin-gonic/gin"
 )
