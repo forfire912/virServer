@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: virserver
+      POSTGRES_PASSWORD: virserver
+      POSTGRES_DB: virserver
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U virserver"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: virserver
+      MINIO_ROOT_PASSWORD: virserver123
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  virserver:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - SERVER_HOST=0.0.0.0
+      - SERVER_PORT=8080
+      - SERVER_MODE=debug
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=virserver
+      - DB_PASSWORD=virserver
+      - DB_NAME=virserver
+      - DB_SSLMODE=disable
+      - S3_ENDPOINT=http://minio:9000
+      - S3_BUCKET=virserver
+      - S3_ACCESS_KEY=virserver
+      - S3_SECRET_KEY=virserver123
+      - JWT_SECRET=your-secret-key-change-in-production
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    volumes:
+      - ./artifacts:/app/artifacts
+      - ./snapshots:/app/snapshots
+      - ./work:/app/work
+
+volumes:
+  postgres_data:
+  minio_data:

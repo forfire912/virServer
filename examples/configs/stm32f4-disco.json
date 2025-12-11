@@ -1,0 +1,67 @@
+{
+  "system_id": "stm32f4-disco",
+  "name": "STM32F4 Discovery Board",
+  "description": "STM32F4 Discovery board with Cortex-M4 processor",
+  "nodes": [
+    {
+      "id": "mcu",
+      "backend": "qemu",
+      "processor": {
+        "type": "ARM Cortex-M4",
+        "cores": 1,
+        "frequency": 168000000,
+        "features": {
+          "fpu": true,
+          "dsp": true
+        }
+      },
+      "memory": [
+        {
+          "type": "Flash",
+          "address": 134217728,
+          "size": 1048576,
+          "access": "RX"
+        },
+        {
+          "type": "RAM",
+          "address": 536870912,
+          "size": 196608,
+          "access": "RW"
+        }
+      ],
+      "peripherals": [
+        {
+          "type": "UART",
+          "name": "USART2",
+          "address": 1073759232,
+          "irq": [38],
+          "properties": {
+            "baudrate": 115200
+          }
+        },
+        {
+          "type": "GPIO",
+          "name": "GPIOD",
+          "address": 1073889280,
+          "properties": {
+            "pins": 16
+          }
+        },
+        {
+          "type": "Timer",
+          "name": "TIM2",
+          "address": 1073741824,
+          "irq": [28]
+        }
+      ]
+    }
+  ],
+  "boot": {
+    "bootargs": ["-kernel"]
+  },
+  "resources": {
+    "cpu_cores": 1,
+    "memory_mb": 512,
+    "timeout_sec": 3600
+  }
+}
